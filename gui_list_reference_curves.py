@@ -8,6 +8,19 @@ import sys, copy
 
 from refcurves import get_refcurves_metadata
 
+def get_monospace_font():
+    def is_fixed_pitch(font):
+        return QtGui.QFontInfo(font).fixedPitch()
+    font = QtGui.QFont("monospace")
+    if is_fixed_pitch(font): return font
+    font.setStyleHint(QtGui.QFont.Monospace)
+    if is_fixed_pitch(font): return font
+    font.setStyleHint(QtGui.QFont.TypeWriter)
+    if is_fixed_pitch(font): return font
+    font.setFamily("courier")
+    if is_fixed_pitch(font): return font
+    return font
+
 class CheckboxTree(QtWidgets.QTreeWidget):
     """ https://stackoverflow.com/a/57820072/183995 """
 
@@ -32,6 +45,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
             if 'filename' in element:
                 current.setData(0, Qt.UserRole, element['filename'])
                 current.setText(1, '#ff0000')
+                current.setFont(1, get_monospace_font())
             if 'comment' in element:
                 current.setToolTip(0, element['comment'])
             current.setFlags(current.flags() & ~Qt.ItemIsSelectable)

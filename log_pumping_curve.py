@@ -30,6 +30,7 @@ def main():
         last_sampling_time = 0.0
         last_logging_time = 0.0
         last_value = 1e10
+        last_sample = None
         while True:
             try:
                 voltage = ljm.eReadName(handle, "AIN0")
@@ -41,14 +42,23 @@ def main():
             print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure: {pressure:.4e} mbar (voltage: {voltage:.4f} V)")
             change_over_threshold = abs((pressure - last_value) / last_value) * 100 > args.logging_threshold
             last_logging_far_ago = time.time() - last_logging_time > args.max_logging_interval
+            sample = {'pressure': pressure, 'voltage': voltage, 'ts': time.time()}
             if change_over_threshold or last_logging_far_ago:
                 print("logging a new value now.")
                 print(f"change_over_threshold={change_over_threshold}, last_logging_far_ago={last_logging_far_ago}")
                 last_logging_time = time.time()
                 last_value = pressure
                 with open(args.logfile, 'a') as f:
-                    json.dump({'pressure': pressure, 'voltage': voltage, 'ts': time.time()}, f)
+                    if last_sample and change_over_threshold:
+                        # also dump the sample from before so that line plots
+                        # aren't 'cutting the corner' after sudden changes
+                        json.dump(last_sample, f)
+                        f.write('\n')
+                    json.dump(sample, f)
                     f.write('\n')
+                last_sample = None # prevent to potentially log the current value again
+            else:
+                last_sample = sample
             time_since_last_sampling = time.time() - last_sampling_time
             time.sleep(args.sampling_interval - time_since_last_sampling)
     except KeyboardInterrupt:

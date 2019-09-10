@@ -4,15 +4,16 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.Qt import Qt
-import sys
+import sys, copy
 
 from refcurves import get_refcurves_metadata
 
 class CheckboxTree(QtWidgets.QTreeWidget):
     """ https://stackoverflow.com/a/57820072/183995 """
 
-    #items_changed_signal = QtCore.pyqtSignal(str, str)
-    items_changed_signal = QtCore.pyqtSignal()
+    styles_changed_signal = QtCore.pyqtSignal()
+    #checked_filenames_changed_signal = QtCore.pyqtSignal(str, str)
+    checked_filenames_changed_signal = QtCore.pyqtSignal()
     checked_filenames = set()
 
     def __init__(self, data):
@@ -30,6 +31,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
             current.setText(0, text)
             if 'filename' in element:
                 current.setData(0, Qt.UserRole, element['filename'])
+                current.setText(1, '#ff0000')
             if 'comment' in element:
                 current.setToolTip(0, element['comment'])
             current.setFlags(current.flags() & ~Qt.ItemIsSelectable)
@@ -39,7 +41,6 @@ class CheckboxTree(QtWidgets.QTreeWidget):
                 current.setFlags(current.flags() | Qt.ItemIsTristate)
                 for child in element['children']:
                     add_subtree(child, parent=current)
-            current.setText(1, '#ff0000')
         for element in data:
             add_subtree(element)
 
@@ -51,21 +52,24 @@ class CheckboxTree(QtWidgets.QTreeWidget):
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
     def change_handler(self, item, column):
         """ SLOT to handle change events on tree members """
-        filename = item.data(0, Qt.UserRole)
-        def update_selected_filenames(add=False, remove=False):
-            if not filename: return
-            try:
-                if add:    self.checked_filenames.add(filename)
-                if remove: self.checked_filenames.remove(filename)
-            except KeyError:
+        cf = copy.copy(self.checked_filenames)
+        if column == 0:
+            filename = item.data(0, Qt.UserRole)
+            def update_selected_filenames(add=False, remove=False):
+                if not filename: return
+                try:
+                    if add:
+                        self.checked_filenames.add(filename)
+                    if remove:
+                        self.checked_filenames.remove(filename)
+                except KeyError:
+                    pass
+            if item.checkState(0) == Qt.Checked:
+                update_selected_filenames(add=True)
+            elif item.checkState(0) == Qt.Unchecked:
+                update_selected_filenames(remove=True)
+            elif item.checkState(0) == Qt.PartiallyChecked:
                 pass
-        if item.checkState(column) == Qt.Checked:
-            update_selected_filenames(add=True)
-        elif item.checkState(column) == Qt.Unchecked:
-            update_selected_filenames(remove=True)
-        elif item.checkState(column) == Qt.PartiallyChecked:
-            pass
-            #self.update_selected_filenames(remove=True)
 
         #with open('debug.log', 'a') as f:
         #    import time
@@ -75,7 +79,9 @@ class CheckboxTree(QtWidgets.QTreeWidget):
         #    f.write("filename: %s" % str(item.data(0, Qt.UserRole)))
         #    f.write("\n")
 
-        self.items_changed_signal.emit()
+        if cf != self.checked_filenames:
+            self.checked_filenames_changed_signal.emit()
+        self.styles_changed_signal.emit()
         self.update_styles()
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
@@ -103,10 +109,14 @@ class CheckboxTree(QtWidgets.QTreeWidget):
     def update_styles(self, item=None, column=None):
 
         def update_item(item):
-            color = item.text(1)
-            color = QtGui.QColor(color)
-            item.setText(1, color.name())
-            item.setForeground(1, color)
+            filename = item.data(0, Qt.UserRole)
+
+            if filename:
+                color = item.text(1)
+                color = item.text(1)
+                color = QtGui.QColor(color)
+                item.setText(1, color.name())
+                item.setForeground(1, color)
 
             def set_background(color):
                 color = QtGui.QColor(color)

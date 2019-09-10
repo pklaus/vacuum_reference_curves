@@ -15,9 +15,11 @@ from gui_list_reference_curves import CheckboxTree
 from gui_vacuum_plot import VacuumPlot
 from refcurves import get_refcurves_metadata, get_refcurve
 
-import sys, time
+import sys, time, copy
 
 class ReferenceCurveGUI(QWidget):
+
+    last_checked_filenames = None
 
     def __init__(self):
         super().__init__()
@@ -35,7 +37,8 @@ class ReferenceCurveGUI(QWidget):
         hbox = QHBoxLayout(self)
 
         self.ct = CheckboxTree(data)
-        self.ct.items_changed_signal.connect(self.update_plots)
+        self.ct.checked_filenames_changed_signal.connect(self.update_plots_data)
+        self.ct.styles_changed_signal.connect(self.update_plots_style)
 
         topleft = self.ct
         topleft.setFrameShape(QFrame.StyledPanel)
@@ -64,7 +67,17 @@ class ReferenceCurveGUI(QWidget):
         self.resize(1700, 1000)
         self.show()
 
-    def update_plots(self):
+    def update_plots_style(self):
+        for filename in self.ct.checked_filenames:
+            color = self.ct.color_for_filename(filename)
+            self.vp.set_color(filename, c=color)
+
+    def update_plots_data(self):
+        # run only if selected curves has changed
+        if self.ct.checked_filenames == self.last_checked_filenames:
+            return
+        self.last_checked_filenames = copy.copy(self.ct.checked_filenames)
+
         for filename in self.ct.checked_filenames:
             rc = get_refcurve(filename)
             color = self.ct.color_for_filename(filename)

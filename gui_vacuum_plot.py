@@ -33,6 +33,13 @@ class VacuumPlot(pg.PlotWidget):
         yd = rc.data[1]
         plot.setData(y=yd, x=xd)
 
+    def set_color(self, id, c=(200, 200, 100)):
+        plot = self.current_plots.get(id, None)
+        if not plot:
+            #raise KeyError('No plot with id %s found' % id)
+            return
+        plot.setPen(width=3, color=c)
+
     def draw_start(self):
         ### Add in some extra graphics
         x_0 = -0.01

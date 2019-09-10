@@ -1,0 +1,5 @@
+https://labjack.com/sites/default/files/software/Python_LJM_2019_04_03.zip
+PyQt5
+pyqtgraph
+numpy
+matplotlib

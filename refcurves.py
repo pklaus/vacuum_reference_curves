@@ -57,7 +57,6 @@ def get_refcurve(name):
     #pressure_readings = [pr for pr in pressure_readings if pr['ts'] < dt(2019, 9, 5, 22, 0).timestamp()]
     timestamps = [pr['ts'] for pr in pressure_readings]
     pressure = [pr['pressure'] for pr in pressure_readings]
-    voltage = [pr['voltage'] for pr in pressure_readings]
     starts = [chunk for chunk in chunks if 'action' in chunk and chunk['action'] == 'pumping_started']
     return ReferenceCurve(name=name, filename=filename, start=starts[0]['ts'], data=(timestamps, pressure))
 

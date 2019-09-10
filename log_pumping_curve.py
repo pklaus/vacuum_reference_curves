@@ -3,13 +3,9 @@
 import time, json
 from datetime import datetime as dt
 
-from labjack import ljm
-
-from balzerspkg020_helpers import interpolate_log_aware
-from balzerspkg020 import tables
-
-handle = ljm.openS("ANY", "ANY", "ANY")
-
+from gauge_plugin import GaugeError
+import balzers_pkg020_plugin
+import vacom_mvc3_plugin, balzers_pkg020_plugin
 
 def main():
     import argparse
@@ -31,18 +27,21 @@ def main():
         last_logging_time = 0.0
         last_value = 1e10
         last_sample = None
+        #gauge = balzers_pkg020_plugin.BalzersPkg020()
+        gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channel=3)
         while True:
             try:
-                voltage = ljm.eReadName(handle, "AIN0")
-            except ljm.ljm.LJMError:
+                reading = gauge.get_reading()
+            except GaugeError:
                 time.sleep(1.0)
                 continue
             last_sampling_time = time.time()
-            pressure = interpolate_log_aware(voltage, tables['tpr2'])
-            print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure: {pressure:.4e} mbar (voltage: {voltage:.4f} V)")
+            pressure = reading['pressure']
+            print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure: {pressure:.4e} mbar")
             change_over_threshold = abs((pressure - last_value) / last_value) * 100 > args.logging_threshold
             last_logging_far_ago = time.time() - last_logging_time > args.max_logging_interval
-            sample = {'pressure': pressure, 'voltage': voltage, 'ts': time.time()}
+            sample = reading
+            sample.update({'ts': time.time()})
             if change_over_threshold or last_logging_far_ago:
                 print("logging a new value now.")
                 print(f"change_over_threshold={change_over_threshold}, last_logging_far_ago={last_logging_far_ago}")

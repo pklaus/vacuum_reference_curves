@@ -33,6 +33,21 @@ def get_refcurves_metadata():
               'date': '2019-09-10',
               'name': 'fifth pumping (2nd this day)',
             },
+            {
+              'filename': 'data/2019-09-10_3rd.log',
+              'date': '2019-09-10',
+              'name': 'sixth pumping (3rd this day)',
+            },
+            {
+              'filename': 'data/2019-09-10_4th_mvc3.log',
+              'date': '2019-09-10',
+              'name': 'seventh pumping (4th this day) Vacom MVC-3',
+            },
+            {
+              'filename': 'data/2019-09-10_4th_pkg020.log',
+              'date': '2019-09-10',
+              'name': 'seventh pumping (4th this day) Balzers PKG020',
+            },
         ]},
         {'name': 'UFO reference curves with content', 'children': [
             {'name': 'heatsinks', 'children': [

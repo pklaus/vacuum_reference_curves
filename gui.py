@@ -63,9 +63,9 @@ class ReferenceCurveGUI(QWidget):
         self.setLayout(hbox)
 
         self.setGeometry(300, 300, 300, 300)
-        self.setWindowTitle('QSplitter')
+        self.setWindowTitle('UFO Vacuum Reference Curves')
         self.resize(1700, 1000)
-        self.show()
+        self.showMaximized()
 
     def update_plots_style(self):
         for filename in self.ct.checked_filenames:

@@ -9,11 +9,13 @@ import vacom_mvc3_plugin, balzers_pkg020_plugin
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--write-header', action='store_true', help='write a file header and log the start time, too')
-    parser.add_argument('--logging-threshold', type=float, default=5., help='log whenever the value has changed more then this amount in percent')
-    parser.add_argument('--max-logging-interval', type=float, default=120, help='also log a new value if this amount of seconds has passed')
-    parser.add_argument('--sampling-interval', type=float, default=2, help='also log a new value if this amount of minutes has passed')
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--write-header', '-h', action='store_true', help='write a file header and log the start time, too')
+    parser.add_argument('--logging-threshold', '-t', type=float, default=5., help='log whenever the value has changed more then this amount in percent')
+    parser.add_argument('--max-logging-interval', '-l', type=float, default=120, help='also log a new value if this amount of seconds has passed')
+    parser.add_argument('--sampling-interval', '-s', type=float, default=2, help='also log a new value if this amount of minutes has passed')
+    parser.add_argument('--gauge', '-g', choices=('balzers', 'vacom'), required=True)
+    parser.add_argument('--help', '-H', action='help', help='show this help message and exit')
     parser.add_argument('logfile', default=dt.now().isoformat().replace(':', '-'))
     args = parser.parse_args()
     if args.write_header:
@@ -27,8 +29,10 @@ def main():
         last_logging_time = 0.0
         last_value = 1e10
         last_sample = None
-        #gauge = balzers_pkg020_plugin.BalzersPkg020()
-        gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channel=3)
+        if args.gauge == 'balzers':
+            gauge = balzers_pkg020_plugin.BalzersPkg020()
+        elif args.gauge == 'vacom':
+            gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channel=3)
         while True:
             try:
                 reading = gauge.get_reading()

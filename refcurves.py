@@ -48,6 +48,48 @@ def get_refcurves_metadata():
               'date': '2019-09-10',
               'name': 'seventh pumping (4th this day) Balzers PKG020',
             },
+            {
+              'filename': './data/2019-09-11_1st_mvc3.log',
+              'date': '2019-09-11',
+              'name': 'eigth pumping (1st this day) Vacom MVC-3',
+            },
+            {
+              'filename': './data/2019-09-11_1st_pkg020.log',
+              'date': '2019-09-11',
+              'name': 'eigth pumping (1st this day) Balzers PKG020',
+            },
+            {
+              'filename': './data/2019-09-11_2nd_mvc3.log',
+              'date': '2019-09-11',
+              'name': 'nineth pumping (2nd this day) Vacom MVC-3',
+            },
+            {
+              'filename': './data/2019-09-11_2nd_pkg020.log',
+              'date': '2019-09-11',
+              'name': 'nineth pumping (2ndn this day) Balzers PKG020',
+            },
+            {
+              'filename': './data/2019-09-11_3rd_mvc3.log',
+              'date': '2019-09-11',
+              'name': 'tenth pumping (3rd this day) Vacom MVC-3',
+            },
+            {
+              'filename': './data/2019-09-11_3rd_pkg020.log',
+              'date': '2019-09-11',
+              'name': 'tenth pumping (3rd this day) Balzers PKG020',
+            },
+        ]},
+        {'name': 'only prevacuum (no UFO) reference curves', 'children': [
+            {
+              'filename': './data/prevacuum_only/2019-09-11_mvc3.log',
+              'date': '2019-09-11',
+              'name': 'prevacuum only w/ Vacom MVC-3',
+            },
+            {
+              'filename': './data/prevacuum_only/2019-09-11_pkg020.log',
+              'date': '2019-09-11',
+              'name': 'prevacuum only w/ Balzers PKG020',
+            },
         ]},
         {'name': 'UFO reference curves with content', 'children': [
             {'name': 'heatsinks', 'children': [

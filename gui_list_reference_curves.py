@@ -6,7 +6,19 @@ from PyQt5 import QtGui
 from PyQt5.Qt import Qt
 import sys, copy
 
+import matplotlib as mpl
+
 from refcurves import get_refcurves_metadata
+
+color_index = 0
+def next_color():
+    global color_index
+    color = 'C%d' % (color_index % 10)
+    color = mpl.colors.to_rgb(color)
+    color = tuple(int(comp * 255) for comp in color)
+    color = f"#{color[0]:02x}{color[1]:02x}{color[2]:02x}"
+    color_index += 1
+    return color
 
 def get_monospace_font():
     def is_fixed_pitch(font):
@@ -35,6 +47,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
         self.setHeaderLabels(['curve', 'color'])
         self.setColumnWidth(0, 500)
         self.itemClicked.connect(self.click_handler)
+
         def add_subtree(element, parent=self):
             current = QtWidgets.QTreeWidgetItem(parent)
             current.setExpanded(True)
@@ -44,7 +57,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
             current.setText(0, text)
             if 'filename' in element:
                 current.setData(0, Qt.UserRole, element['filename'])
-                current.setText(1, '#ff0000')
+                current.setText(1, next_color())
                 current.setFont(1, get_monospace_font())
             if 'comment' in element:
                 current.setToolTip(0, element['comment'])
@@ -55,6 +68,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
                 current.setFlags(current.flags() | Qt.ItemIsTristate)
                 for child in element['children']:
                     add_subtree(child, parent=current)
+
         for element in data:
             add_subtree(element)
 

@@ -21,7 +21,7 @@ class VacuumPlot(pg.PlotWidget):
         self.showGrid(x=True, y=True, alpha=0.2)
 
         self.setLabel('left', 'pressure', units='mbar')
-        self.setLabel('bottom', 'Time', units='h')
+        self.setLabel('bottom', 'Time', units='min')
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):
         #if id in self.current_plots: plot = self.current_plots[id]
@@ -29,7 +29,7 @@ class VacuumPlot(pg.PlotWidget):
         plot = self.current_plots.get(id, self.plot())
         self.current_plots[id] = plot
         plot.setPen(width=3, color=c)
-        xd = [(ts-rc.start) / 3600 for ts in rc.data[0]]
+        xd = [(ts-rc.start) / 60 for ts in rc.data[0]]
         yd = rc.data[1]
         plot.setData(y=yd, x=xd)
 

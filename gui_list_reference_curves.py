@@ -48,9 +48,9 @@ class CheckboxTree(QtWidgets.QTreeWidget):
         self.setColumnWidth(0, 500)
         self.itemClicked.connect(self.click_handler)
 
-        def add_subtree(element, parent=self):
+        def add_subtree(element, parent=self, top_level=False):
             current = QtWidgets.QTreeWidgetItem(parent)
-            current.setExpanded(True)
+            if top_level: current.setExpanded(True)
             text = element['name']
             #if 'date' in element:
             #    text = element['date'] + ' - ' + text
@@ -70,7 +70,7 @@ class CheckboxTree(QtWidgets.QTreeWidget):
                     add_subtree(child, parent=current)
 
         for element in data:
-            add_subtree(element)
+            add_subtree(element, top_level=True)
 
         #self.itemChanged['QTreeWidgetItem*'].connect(self.change_handler)
         self.itemChanged.connect(self.change_handler)

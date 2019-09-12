@@ -24,7 +24,7 @@ class VacomMvc3(Gauge):
         try:
             read_command = b"RPV%d\r" % channel
             self.ser.write(read_command)
-            time.sleep(.01)
+            time.sleep(.03)
             pressure = ''
             while self.ser.inWaiting() > 0:
                 pressure += self.ser.read(1).decode('ascii')

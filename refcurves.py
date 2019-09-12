@@ -39,7 +39,8 @@ def get_refcurve(name):
     timestamps = [pr['ts'] for pr in pressure_readings]
     pressure = [pr['pressure'] for pr in pressure_readings]
     starts = [chunk for chunk in chunks if 'action' in chunk and chunk['action'] == 'pumping_started']
-    return ReferenceCurve(name=name, filename=filename, start=starts[0]['ts'], data=(timestamps, pressure))
+    first_start = starts[0]['ts'] if len(starts) else float('nan')
+    return ReferenceCurve(name=name, filename=filename, start=first_start, data=(timestamps, pressure))
 
 @attr.s
 class ReferenceCurve:

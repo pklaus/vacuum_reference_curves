@@ -52,8 +52,8 @@ class CheckboxTree(QtWidgets.QTreeWidget):
             current = QtWidgets.QTreeWidgetItem(parent)
             current.setExpanded(True)
             text = element['name']
-            if 'date' in element:
-                text = element['date'] + ' - ' + text
+            #if 'date' in element:
+            #    text = element['date'] + ' - ' + text
             current.setText(0, text)
             if 'filename' in element:
                 current.setData(0, Qt.UserRole, element['filename'])

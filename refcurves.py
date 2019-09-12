@@ -16,6 +16,7 @@ def get_refcurves_metadata(root_directory='./data'):
     data = []
     for path in os.scandir(root_directory):
         data.append(recurse_folder(path, top_root=root_directory))
+    data.sort(key=lambda x: x['name'])
     return data
 
 def recurse_folder(root: os.DirEntry, top_root=''):
@@ -26,6 +27,7 @@ def recurse_folder(root: os.DirEntry, top_root=''):
         if path.is_file() and path.name.endswith('.log'):
             filename = os.path.join(top_root, os.path.join(root.name, path.name))
             children.append({'filename': filename, 'date': 'date', 'name': path.name})
+    children.sort(key=lambda x: x['name'])
     return {'name': root.name, 'children': children}
 
 def get_refcurve(name):

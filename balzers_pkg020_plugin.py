@@ -6,10 +6,20 @@ from gauge_plugin import Gauge, GaugeError
 
 class BalzersPkg020(Gauge):
 
-    def __init__(self, identifier=''):
+    def __init__(self, identifier='', channels=('AIN0',)):
         self.handle = ljm.openS("ANY", "ANY", "ANY")
+        self.selected_channels = channels
 
-    def get_reading(self):
+    def get_readings(self):
+        pressures = []
+        voltages = []
+        for channel in self.selected_channels:
+            reading = self.get_reading(channel)
+            pressures.append(reading['pressure'])
+            voltages.append(reading['voltage'])
+        return {'pressures': pressures, 'voltages': voltages}
+
+    def get_reading(self, channel):
         try:
             voltage = ljm.eReadName(self.handle, "AIN0")
         except ljm.ljm.LJMError:

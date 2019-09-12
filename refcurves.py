@@ -1,108 +1,32 @@
+#!/usr/bin/env python
+
 import attr
 from typing import List, Tuple
 from datetime import datetime as dt
 import json
+import os
+import glob
 
+def get_refcurve_metadata(reffile):
+    with open(reffile) as f:
+        pass #print(f.read())
+    return {'filename': reffile, 'date': 'date', 'name': 'name', 'comment': 'comment'}
 
-def get_refcurves_metadata():
-    data = [
-        {'name': 'empty UFO reference curves', 'children': [
-            {
-              'filename': 'data/2019-09-05.log',
-              'date': '2019-09-05',
-              'name': 'first pumping',
-              'comment': 'This was actually <b>the first time</b> the chamber was pumped!'
-            },
-            {
-              'filename': 'data/2019-09-06.log',
-              'date': '2019-09-06',
-              'name': 'second pumping',
-            },
-            {
-              'filename': 'data/2019-09-09.log',
-              'date': '2019-09-09',
-              'name': 'third pumping',
-            },
-            {
-              'filename': 'data/2019-09-10.log',
-              'date': '2019-09-10',
-              'name': 'fourth pumping',
-            },
-            {
-              'filename': 'data/2019-09-10_2nd.log',
-              'date': '2019-09-10',
-              'name': 'fifth pumping (2nd this day)',
-            },
-            {
-              'filename': 'data/2019-09-10_3rd.log',
-              'date': '2019-09-10',
-              'name': 'sixth pumping (3rd this day)',
-            },
-            {
-              'filename': 'data/2019-09-10_4th_mvc3.log',
-              'date': '2019-09-10',
-              'name': 'seventh pumping (4th this day) Vacom MVC-3',
-            },
-            {
-              'filename': 'data/2019-09-10_4th_pkg020.log',
-              'date': '2019-09-10',
-              'name': 'seventh pumping (4th this day) Balzers PKG020',
-            },
-            {
-              'filename': './data/2019-09-11_1st_mvc3.log',
-              'date': '2019-09-11',
-              'name': 'eigth pumping (1st this day) Vacom MVC-3',
-            },
-            {
-              'filename': './data/2019-09-11_1st_pkg020.log',
-              'date': '2019-09-11',
-              'name': 'eigth pumping (1st this day) Balzers PKG020',
-            },
-            {
-              'filename': './data/2019-09-11_2nd_mvc3.log',
-              'date': '2019-09-11',
-              'name': 'nineth pumping (2nd this day) Vacom MVC-3',
-            },
-            {
-              'filename': './data/2019-09-11_2nd_pkg020.log',
-              'date': '2019-09-11',
-              'name': 'nineth pumping (2ndn this day) Balzers PKG020',
-            },
-            {
-              'filename': './data/2019-09-11_3rd_mvc3.log',
-              'date': '2019-09-11',
-              'name': 'tenth pumping (3rd this day) Vacom MVC-3',
-            },
-            {
-              'filename': './data/2019-09-11_3rd_pkg020.log',
-              'date': '2019-09-11',
-              'name': 'tenth pumping (3rd this day) Balzers PKG020',
-            },
-        ]},
-        {'name': 'only prevacuum (no UFO) reference curves', 'children': [
-            {
-              'filename': './data/prevacuum_only/2019-09-11_mvc3.log',
-              'date': '2019-09-11',
-              'name': 'prevacuum only w/ Vacom MVC-3',
-            },
-            {
-              'filename': './data/prevacuum_only/2019-09-11_pkg020.log',
-              'date': '2019-09-11',
-              'name': 'prevacuum only w/ Balzers PKG020',
-            },
-        ]},
-        {'name': 'UFO reference curves with content', 'children': [
-            {'name': 'heatsinks', 'children': [
-                {'date': '2019-09-05', 'name': 'test with PRESTO heatsink'},
-                {'date': '2019-09-07', 'name': 'test with new quadrant heatsink'},
-            ]},
-            {'name': 'electrical feedthroughs', 'children': [
-                {'date': '2019-09-05', 'name': 'run with FPC feedthrough'},
-                {'date': '2019-09-07', 'name': 'run with PCB sealing'},
-            ]},
-        ]},
-    ]
+def get_refcurves_metadata(root_directory='./data'):
+    data = []
+    for path in os.scandir(root_directory):
+        data.append(recurse_folder(path, top_root=root_directory))
     return data
+
+def recurse_folder(root: os.DirEntry, top_root=''):
+    children = []
+    for path in os.scandir(root):
+        if path.is_dir():
+            children.append(recurse_folder(path, top_root=top_root))
+        if path.is_file() and path.name.endswith('.log'):
+            filename = os.path.join(top_root, os.path.join(root.name, path.name))
+            children.append({'filename': filename, 'date': 'date', 'name': path.name})
+    return {'name': root.name, 'children': children}
 
 def get_refcurve(name):
     filename = name
@@ -123,3 +47,9 @@ class ReferenceCurve:
     filename: str = attr.ib()
     start: float = attr.ib()
     data: Tuple[List[float], List[float]] = attr.ib()
+
+def main():
+    print(get_refcurves_metadata())
+
+if __name__ == "__main__":
+    main()

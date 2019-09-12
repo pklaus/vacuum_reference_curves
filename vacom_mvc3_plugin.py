@@ -12,20 +12,19 @@ class VacomMvc3(Gauge):
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS
         )
-        self.selected_channels = tuple(int(chan) for chan in channels)
-
+        self.selected_channels = channels
 
     def get_readings(self):
-        readings = {'pressure': []}
+        pressures = []
         for channel in self.selected_channels:
-            readings['pressure'].append(self.get_reading(channel))
-        return readings
+            pressures.append(self.get_reading(int(channel)))
+        return {'pressures': pressures}
 
     def get_reading(self, channel):
         try:
             read_command = b"RPV%d\r" % channel
             self.ser.write(read_command)
-            time.sleep(.02)
+            time.sleep(.01)
             pressure = ''
             while self.ser.inWaiting() > 0:
                 pressure += self.ser.read(1).decode('ascii')

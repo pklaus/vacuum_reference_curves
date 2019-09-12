@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import time, json
+import time, json, copy
 from datetime import datetime as dt
 
 from gauge_plugin import GaugeError
@@ -17,18 +17,19 @@ def main():
     parser.add_argument('--logging-threshold', '-t', type=float, default=5., help='log whenever the value has changed more then this amount in percent')
     parser.add_argument('--max-logging-interval', '-l', type=float, default=120, help='also log a new value if this amount of seconds has passed')
     parser.add_argument('--sampling-interval', '-s', type=float, default=2, help='also log a new value if this amount of minutes has passed')
-    parser.add_argument('--gauge-plugin', '-g', choices=('vacom'), required=True)
+    parser.add_argument('--gauge-plugin', '-g', choices=('vacom', 'balzers'), required=True)
     parser.add_argument('--channel', '-c', action='append', type=channel_descr, required=True)
     parser.add_argument('--help', '-H', action='help', help='show this help message and exit')
     parser.add_argument('logfile', default=dt.now().isoformat().replace(':', '-'))
     args = parser.parse_args()
-    print(args.channel)
+    filenames = [f'{args.logfile}_ch{chan[0]}.log' for chan in args.channel]
     if args.write_header:
-        with open(args.logfile, 'a') as f:
-            f.write('# vacuum_pumping_curve v1.1.0 \n')
-            f.write(json.dumps({'filetype': 'vacuum_pumping_curve', 'version': 'v1.1.0'}) + '\n')
-            f.write(json.dumps({'gauge_plugin': args.gauge_plugin, 'channels': args.channel}) + '\n')
-            f.write(json.dumps({'action': 'pumping_started', 'ts': time.time(), 'comment': ''}) + '\n')
+        for i, chan in enumerate(args.channel):
+            with open(filenames[i], 'a') as f:
+                f.write('# vacuum_pumping_curve v1.0.0 \n')
+                f.write(json.dumps({'filetype': 'vacuum_pumping_curve', 'version': 'v1.0.0'}) + '\n')
+                f.write(json.dumps({'gauge_plugin': args.gauge_plugin, 'channel': chan}) + '\n')
+                f.write(json.dumps({'action': 'pumping_started', 'ts': time.time(), 'comment': ''}) + '\n')
     try:
         start = time.time()
         last_sampling_time = 0.0
@@ -36,9 +37,9 @@ def main():
         last_sample = None
         last_sample_stored = False
         if args.gauge_plugin == 'balzers':
-            gauge = balzers_pkg020_plugin.BalzersPkg020()
+            gauge = balzers_pkg020_plugin.BalzersPkg020(identifier='',channels=[ch[0] for ch in args.channel])
         elif args.gauge_plugin == 'vacom':
-            gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channels=(ch[0] for ch in args.channel))
+            gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channels=[ch[0] for ch in args.channel])
         while True:
             try:
                 readings = gauge.get_readings()
@@ -46,12 +47,12 @@ def main():
                 time.sleep(1.0)
                 continue
             last_sampling_time = time.time()
-            pressure = readings['pressure']
-            print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure values: {pressure} [mbar]")
+            pressures = readings['pressures']
+            print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure values: {pressures} [mbar]")
             if last_sample:
                 change_over_threshold = False
-                for i in range(len(pressure)):
-                    if abs((pressure[i] - last_sample['pressure'][i]) / last_sample['pressure'][i]) * 100 > args.logging_threshold:
+                for i in range(len(pressures)):
+                    if abs((pressures[i] - last_sample['pressures'][i]) / last_sample['pressures'][i]) * 100 > args.logging_threshold:
                         change_over_threshold = True
             else:
                 change_over_threshold = False
@@ -62,15 +63,22 @@ def main():
                 print("logging a new value now.")
                 print(f"change_over_threshold={change_over_threshold}, last_logging_far_ago={last_logging_far_ago}")
                 last_logging_time = time.time()
-                last_value = pressure
-                with open(args.logfile, 'a') as f:
-                    if last_sample and not last_sample_stored and change_over_threshold:
-                        # also dump the sample from before so that line plots
-                        # aren't 'cutting the corner' after sudden changes
-                        json.dump(last_sample, f)
+                last_value = pressures
+                for i, chan in enumerate(args.channel):
+                    with open(filenames[i], 'a') as f:
+                        if last_sample and not last_sample_stored and change_over_threshold:
+                            last_sample_copy = copy.copy(last_sample)
+                            last_sample_copy['pressure'] = last_sample_copy['pressures'][i]
+                            del last_sample_copy['pressures']
+                            # also dump the sample from before so that line plots
+                            # aren't 'cutting the corner' after sudden changes
+                            json.dump(last_sample_copy, f)
+                            f.write('\n')
+                        sample_copy = copy.copy(sample)
+                        sample_copy['pressure'] = sample_copy['pressures'][i]
+                        del sample_copy['pressures']
+                        json.dump(sample_copy, f)
                         f.write('\n')
-                    json.dump(sample, f)
-                    f.write('\n')
                 last_sample_stored = True
             else:
                 last_sample_stored = False

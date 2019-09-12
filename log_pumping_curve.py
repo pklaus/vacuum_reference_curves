@@ -81,6 +81,7 @@ def main():
                         f.write('\n')
                 last_sample_stored = True
             else:
+                last_sample = sample
                 last_sample_stored = False
             time_since_last_sampling = time.time() - last_sampling_time
             time.sleep(args.sampling_interval - time_since_last_sampling)

@@ -22,7 +22,7 @@ def recurse_folder(root: os.DirEntry, top_root=''):
     children = []
     for path in os.scandir(root):
         if path.is_dir():
-            children.append(recurse_folder(path, top_root=top_root))
+            children.append(recurse_folder(path, top_root=os.path.join(top_root, root.name)))
         if path.is_file() and path.name.endswith('.log'):
             filename = os.path.join(top_root, os.path.join(root.name, path.name))
             children.append({'filename': filename, 'date': 'date', 'name': path.name})

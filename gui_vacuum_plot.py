@@ -54,8 +54,9 @@ class VacuumPlot(pg.PlotWidget):
     """
 
     current_plots = {}
+    _crosshair = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, crosshair=False, **kwargs):
 
         kwargs['axisItems'] = {'bottom': TimeAxisItem(orientation='bottom')}
 
@@ -79,6 +80,33 @@ class VacuumPlot(pg.PlotWidget):
 
         self.setLabel('left', 'pressure', units='mbar')
         self.setLabel('bottom', 'Time since start of pumping', units='h:mm:ss')
+
+        if crosshair:
+            self.enableCrosshair()
+        self.setMouseTracking(True)
+        self.scene().sigMouseMoved.connect(self.mouseMoved)
+
+    def enableCrosshair(self):
+         self._crosshair = True
+         vLine = pg.InfiniteLine(angle=90, movable=False)
+         hLine = pg.InfiniteLine(angle=0, movable=False)
+         self.addItem(vLine, ignoreBounds=True)
+         self.addItem(hLine, ignoreBounds=True)
+         self.vLine = vLine
+         self.hLine = hLine
+
+    def mouseMoved(self, evt):
+        pos = evt
+        if self.sceneBoundingRect().contains(pos):
+            mousePoint = self.plotItem.vb.mapSceneToView(pos)
+            x = format_timedelta(round(mousePoint.x()))
+            #y = mousePoint.y()
+            #y = np.log10(mousePoint.y())
+            y = 10**mousePoint.y()
+            self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
+        if self._crosshair:
+            self.vLine.setPos(mousePoint.x())
+            self.hLine.setPos(mousePoint.y())
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):
         #if id in self.current_plots: plot = self.current_plots[id]

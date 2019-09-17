@@ -62,7 +62,20 @@ class VacuumPlot(pg.PlotWidget):
         super().__init__(*args, **kwargs)
 
         self.setLogMode(y=True)
-        self.showGrid(x=True, y=True, alpha=0.2)
+        self.showGrid(x=True, y=True, alpha=0.4)
+
+        # http://www.pyqtgraph.org/documentation/graphicsItems/viewbox.html#pyqtgraph.ViewBox.setLimits
+        limits = {
+          'xMin': -100*360*24*3600,
+          'xMax':  100*360*24*3600,
+          'yMin': np.log10(1e-100),
+          'yMax': np.log10(1e100),
+          'minXRange': 0.2,
+          #'maxXRange': ,
+          #'minYRange': ,
+          #'maxYRange': ,
+        }
+        self.setLimits(**limits)
 
         self.setLabel('left', 'pressure', units='mbar')
         self.setLabel('bottom', 'Time since start of pumping', units='h:mm:ss')

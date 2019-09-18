@@ -28,7 +28,12 @@ def recurse_folder(root: os.DirEntry, top_root=''):
             filename = os.path.join(top_root, os.path.join(root.name, path.name))
             children.append({'filename': filename, 'date': 'date', 'name': path.name})
     children.sort(key=lambda x: x['name'])
-    return {'name': root.name, 'children': children}
+    dirname = os.path.join(top_root, root.name)
+    icon_path = os.path.join(dirname, 'icon.svg')
+    entry = {'name': root.name, 'dirname': dirname, 'children': children}
+    if glob.glob(icon_path):
+        entry['icon'] = icon_path
+    return entry
 
 def get_refcurve(name):
     filename = name

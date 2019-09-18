@@ -45,7 +45,9 @@ class CheckboxTree(QtWidgets.QTreeWidget):
         super().__init__()
         self.setColumnCount(2)
         self.setHeaderLabels(['curve', 'color'])
-        self.setColumnWidth(0, 500)
+        self.setColumnWidth(0, 600)
+        self.setStyleSheet("QTreeWidget { font-size: 18; }")
+        self.setIconSize(QtCore.QSize(32, 32))
         self.itemClicked.connect(self.click_handler)
 
         def add_subtree(element, parent=self, top_level=False):
@@ -55,6 +57,9 @@ class CheckboxTree(QtWidgets.QTreeWidget):
             #if 'date' in element:
             #    text = element['date'] + ' - ' + text
             current.setText(0, text)
+            if 'icon' in element:
+                current.setIcon(0, QtGui.QIcon(element['icon']))
+                #current.setData(0, Qt.DecorationRole, QtGui.QPixmap(element['icon']));
             if 'filename' in element:
                 current.setData(0, Qt.UserRole, element['filename'])
                 current.setText(1, next_color())

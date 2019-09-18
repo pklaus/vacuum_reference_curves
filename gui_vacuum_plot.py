@@ -1,6 +1,7 @@
 import PyQt5
 from PyQt5 import QtGui, QtCore
 import pyqtgraph as pg
+import pyqtgraph.exporters
 import numpy as np
 from datetime import datetime as dt
 
@@ -143,3 +144,8 @@ class VacuumPlot(pg.PlotWidget):
                 ready_for_deletion.append(id)
         for id in ready_for_deletion:
             del self.current_plots[id]
+
+    def save_as(self, filename, width=200):
+        exporter = pg.exporters.ImageExporter(self.plotItem)
+        exporter.parameters()['width'] = width # this also affects the height parameter
+        exporter.export(filename)

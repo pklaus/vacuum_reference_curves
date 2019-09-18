@@ -86,6 +86,7 @@ class ReferenceCurveGUI(QWidget):
         self.vp.remove_all_but(self.ct.checked_filenames)
         #self.vp.setXRange(0., 10.)
         #self.vp.draw_start()
+        #self.vp.save_as('exported_chart.png', width=1920)
 
     def live_plot(self, source):
         return

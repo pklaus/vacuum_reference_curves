@@ -229,6 +229,7 @@ class VacuumPlot(pg.PlotWidget):
             del self.current_plots[id]
 
     def save_as(self, filename, width=200):
+        """ http://www.pyqtgraph.org/documentation/exporting.html """
         exporter = pg.exporters.ImageExporter(self.plotItem)
         exporter.parameters()['width'] = width # this also affects the height parameter
         exporter.export(filename)

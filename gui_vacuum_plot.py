@@ -140,7 +140,7 @@ class VacuumPlot(pg.PlotWidget):
 
     def enableCrosshair(self):
         self._crosshair_enabled = True
-        pen = pg.mkPen('000', width=0.5)
+        pen = pg.mkPen('f22', width=0.8)
         self._crosshair = Crosshair(pen=pen)
         self.addItem(self._crosshair, ignoreBounds=True)
         self.hideCrosshair() # only show once mouse is moving

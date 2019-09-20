@@ -68,6 +68,10 @@ class ReferenceCurveGUI(QWidget):
         self.resize(1700, 1000)
         self.showMaximized()
 
+    def keyPressEvent(self,event):
+        if event.key() in (67, 81) and (event.modifiers() & QtCore.Qt.ControlModifier):
+            QApplication.quit()
+
     def update_plots_style(self):
         for filename in self.ct.checked_filenames:
             color = self.ct.color_for_filename(filename)

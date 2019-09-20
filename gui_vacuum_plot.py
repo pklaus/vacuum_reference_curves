@@ -75,6 +75,7 @@ class VacuumPlot(pg.PlotWidget):
 
     current_plots = {}
     _crosshair = False
+    _crosshair_hidden = True
 
     def __init__(self, *args, crosshair=False, **kwargs):
 
@@ -115,6 +116,19 @@ class VacuumPlot(pg.PlotWidget):
         self.hLine = pg.InfiniteLine(angle=0, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
         self.addItem(self.hLine, ignoreBounds=True)
+        self.showCrosshair()
+
+    def showCrosshair(self):
+        if self._crosshair:
+            self._crosshair_hidden = False
+            self.vLine.show()
+            self.hLine.show()
+
+    def hideCrosshair(self):
+        if self._crosshair:
+            self._crosshair_hidden = True
+            self.vLine.hide()
+            self.hLine.hide()
 
     def mouseMoved(self, evt):
         pos = evt
@@ -126,11 +140,13 @@ class VacuumPlot(pg.PlotWidget):
             y = 10**mousePoint.y()
             self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
         if self._crosshair:
+            if self._crosshair_hidden: self.showCrosshair()
             self.vLine.setPos(mousePoint.x())
             self.hLine.setPos(mousePoint.y())
 
     def leaveEvent(self, event):
         self.plotItem.setTitle(self.default_title)
+        self.hideCrosshair()
         return super().leaveEvent(event)
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):

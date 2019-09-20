@@ -108,8 +108,9 @@ class VacuumPlot(pg.PlotWidget):
 
     def enableCrosshair(self):
         self._crosshair = True
-        self.vLine = pg.InfiniteLine(angle=90, movable=False)
-        self.hLine = pg.InfiniteLine(angle=0, movable=False)
+        pen = pg.mkPen('000', width=0.5)
+        self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False, pen=pen)
         self.addItem(self.vLine, ignoreBounds=True)
         self.addItem(self.hLine, ignoreBounds=True)
 

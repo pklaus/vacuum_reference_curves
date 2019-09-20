@@ -15,7 +15,8 @@ def get_refcurve_metadata(reffile):
 def get_refcurves_metadata(root_directory='./data_v1.1.0'):
     data = []
     for path in os.scandir(root_directory):
-        data.append(recurse_folder(path, top_root=root_directory))
+        if path.is_dir():
+            data.append(recurse_folder(path, top_root=root_directory))
     data.sort(key=lambda x: x['name'])
     return data
 

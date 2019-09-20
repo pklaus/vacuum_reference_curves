@@ -107,13 +107,11 @@ class VacuumPlot(pg.PlotWidget):
         self.scene().sigMouseMoved.connect(self.mouseMoved)
 
     def enableCrosshair(self):
-         self._crosshair = True
-         vLine = pg.InfiniteLine(angle=90, movable=False)
-         hLine = pg.InfiniteLine(angle=0, movable=False)
-         self.addItem(vLine, ignoreBounds=True)
-         self.addItem(hLine, ignoreBounds=True)
-         self.vLine = vLine
-         self.hLine = hLine
+        self._crosshair = True
+        self.vLine = pg.InfiniteLine(angle=90, movable=False)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False)
+        self.addItem(self.vLine, ignoreBounds=True)
+        self.addItem(self.hLine, ignoreBounds=True)
 
     def mouseMoved(self, evt):
         pos = evt

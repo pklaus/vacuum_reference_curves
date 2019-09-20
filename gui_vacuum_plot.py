@@ -98,7 +98,7 @@ class VacuumPlot(pg.PlotWidget):
 
     current_plots = {}
     _crosshair_enabled = False
-    _crosshair_hidden = True
+    _mouse_over_plot = False
 
     def __init__(self, *args, crosshair=False, **kwargs):
 
@@ -141,35 +141,49 @@ class VacuumPlot(pg.PlotWidget):
         pen = pg.mkPen('000', width=0.5)
         self._crosshair = Crosshair(pen=pen)
         self.addItem(self._crosshair, ignoreBounds=True)
-        self.showCrosshair()
+        self.hideCrosshair() # only show once mouse is moving
 
     def showCrosshair(self):
-        if self._crosshair_enabled:
-            self._crosshair_hidden = False
-            self._crosshair.show()
+        self._crosshair.show()
 
     def hideCrosshair(self):
-        if self._crosshair_enabled:
-            self._crosshair_hidden = True
-            self._crosshair.hide()
+        self._crosshair.hide()
 
     def mouseMoved(self, evt):
         pos = evt
-        if self.sceneBoundingRect().contains(pos):
+        if self.plotItem.getViewBox().geometry().contains(pos):
             mousePoint = self.plotItem.vb.mapSceneToView(pos)
             x = format_timedelta(round(mousePoint.x()))
             #y = mousePoint.y()
             #y = np.log10(mousePoint.y())
             y = 10**mousePoint.y()
             self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
+            if not self._mouse_over_plot:
+                # entering the plot for the first time
+                self._mouse_over_plot = True
+                if self._crosshair_enabled:
+                    self.showCrosshair()
+                cursor = QtGui.QCursor(QtCore.Qt.BlankCursor)
+                QtGui.QApplication.setOverrideCursor(cursor)
+                QtGui.QApplication.changeOverrideCursor(cursor)
+                #QtGui.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
             if self._crosshair_enabled:
-                if self._crosshair_hidden: self.showCrosshair()
                 self._crosshair.pos = mousePoint
                 self.forceRepaint()
+        else:
+            self.mouseLeftTargetArea()
+
+    def mouseLeftTargetArea(self):
+        if not self._mouse_over_plot:
+            # this method should be called only once when the mouse leaves the target region (ViewBox)
+            return
+        self._mouse_over_plot = False
+        QtGui.QApplication.restoreOverrideCursor()
+        self.plotItem.setTitle(self.default_title)
+        if self._crosshair_enabled: self.hideCrosshair()
 
     def leaveEvent(self, event):
-        self.plotItem.setTitle(self.default_title)
-        self.hideCrosshair()
+        self.mouseLeftTargetArea()
         return super().leaveEvent(event)
 
     def forceRepaint(self, *args, **kwargs):

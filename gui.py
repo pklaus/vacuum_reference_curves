@@ -46,7 +46,7 @@ class ReferenceCurveGUI(QWidget):
         topright = QFrame(self)
         topright.setFrameShape(QFrame.StyledPanel)
 
-        self.vp = VacuumPlot(title='Vacuum Plot', name='Vacuum')
+        self.vp = VacuumPlot(title='Vacuum Plot', name='Vacuum', useOpenGL=True)
         self.vp.enableCrosshair()
 
         bottom = self.vp

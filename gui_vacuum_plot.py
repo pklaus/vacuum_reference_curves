@@ -18,17 +18,13 @@ def format_timedelta(seconds):
         ret_str = ret_str[:-9]
     return ret_str
 
-class InfiniteLineWithBreak(pg.GraphicsObject):
+class Crosshair(pg.GraphicsObject):
 
-    def __init__(self, angle=0, breakPos=0, breakWidth=2, pen=None):
+    def __init__(self, pen=None):
         pg.GraphicsObject.__init__(self)
-
-        self.breakPos = breakPos # data coordinates
-        self.breakWidth = breakWidth # percent of view
-
-        self.pos = 0
-        self.angle = angle
+        self.pos = QtCore.QPoint(0, 0)
         self.pen = pen or mkPen('ff0', 0.5)
+        self.gap = 20 # gap in pixels
 
     def boundingRect(self):
         br = self.viewRect()
@@ -36,17 +32,14 @@ class InfiniteLineWithBreak(pg.GraphicsObject):
 
     def paint(self, p, *args):
         br = self.boundingRect()
+        px_width, px_height = self.pixelSize()
         p.setPen(self.pen)
-        if self.angle == 0:
-            gap = self.breakWidth/100 * (br.right() - br.left())
-            p.drawLine(pg.Point(br.left(), self.pos), pg.Point(self.breakPos - gap/2, self.pos))
-            p.drawLine(pg.Point(self.breakPos + gap/2, self.pos), pg.Point(br.right(), self.pos))
-        elif self.angle == 90:
-            gap = self.breakWidth/100 * (br.bottom() - br.top())
-            p.drawLine(pg.Point(self.pos, br.top()), pg.Point(self.pos, self.breakPos - gap/2))
-            p.drawLine(pg.Point(self.pos, self.breakPos + gap/2), pg.Point(self.pos, br.bottom()))
-        else:
-            raise NotImplementedError()
+        gap = px_width * self.gap
+        p.drawLine(pg.Point(br.left(), self.pos.y()), pg.Point(self.pos.x() - gap/2, self.pos.y()))
+        p.drawLine(pg.Point(self.pos.x() + gap/2, self.pos.y()), pg.Point(br.right(), self.pos.y()))
+        gap = px_height * self.gap
+        p.drawLine(pg.Point(self.pos.x(), br.top()), pg.Point(self.pos.x(), self.pos.y() - gap/2))
+        p.drawLine(pg.Point(self.pos.x(), self.pos.y() + gap/2), pg.Point(self.pos.x(), br.bottom()))
 
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
@@ -104,7 +97,7 @@ class VacuumPlot(pg.PlotWidget):
     """
 
     current_plots = {}
-    _crosshair = False
+    _crosshair_enabled = False
     _crosshair_hidden = True
 
     def __init__(self, *args, crosshair=False, **kwargs):
@@ -144,25 +137,21 @@ class VacuumPlot(pg.PlotWidget):
         self.sigRangeChanged.connect(self.forceRepaint)
 
     def enableCrosshair(self):
-        self._crosshair = True
+        self._crosshair_enabled = True
         pen = pg.mkPen('000', width=0.5)
-        self.vLine = InfiniteLineWithBreak(angle=90, breakWidth=10, pen=pen)
-        self.hLine = InfiniteLineWithBreak(angle=0, breakWidth=10, pen=pen)
-        self.addItem(self.vLine, ignoreBounds=True)
-        self.addItem(self.hLine, ignoreBounds=True)
+        self._crosshair = Crosshair(pen=pen)
+        self.addItem(self._crosshair, ignoreBounds=True)
         self.showCrosshair()
 
     def showCrosshair(self):
-        if self._crosshair:
+        if self._crosshair_enabled:
             self._crosshair_hidden = False
-            self.vLine.show()
-            self.hLine.show()
+            self._crosshair.show()
 
     def hideCrosshair(self):
-        if self._crosshair:
+        if self._crosshair_enabled:
             self._crosshair_hidden = True
-            self.vLine.hide()
-            self.hLine.hide()
+            self._crosshair.hide()
 
     def mouseMoved(self, evt):
         pos = evt
@@ -173,16 +162,9 @@ class VacuumPlot(pg.PlotWidget):
             #y = np.log10(mousePoint.y())
             y = 10**mousePoint.y()
             self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
-            if self._crosshair:
-                #viewRect = self.scene().views()[0].boundingRect()
-                viewRect = self.viewGeometry()
-                width, height = viewRect.width(), viewRect.height()
+            if self._crosshair_enabled:
                 if self._crosshair_hidden: self.showCrosshair()
-                self.vLine.pos = mousePoint.x()
-                self.vLine.breakPos = mousePoint.y()
-                self.hLine.pos = mousePoint.y()
-                self.hLine.breakPos = mousePoint.x()
-                self.hLine.breakWidth = 10 * height/width
+                self._crosshair.pos = mousePoint
                 self.forceRepaint()
 
     def leaveEvent(self, event):

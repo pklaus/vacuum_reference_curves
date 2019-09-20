@@ -216,3 +216,14 @@ class VacuumPlot(pg.PlotWidget):
         exporter = pg.exporters.ImageExporter(self.plotItem)
         exporter.parameters()['width'] = width # this also affects the height parameter
         exporter.export(filename)
+
+def main():
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    vp = VacuumPlot()
+    vp.enableCrosshair()
+    vp.showMaximized()
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()

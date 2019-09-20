@@ -3,13 +3,20 @@ from PyQt5 import QtGui, QtCore
 import pyqtgraph as pg
 import pyqtgraph.exporters
 import numpy as np
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 def format_timedelta(seconds):
-    return str(dt.utcfromtimestamp(seconds) - dt.utcfromtimestamp(0))
+    td = dt.utcfromtimestamp(seconds) - dt.utcfromtimestamp(0)
+    if td >= timedelta(0):
+        ret_str = str(td)
+    else:
+        ret_str = '-' + str(-td)
+    if ret_str.endswith(('day, 0:00:00', 'days, 0:00:00')):
+        ret_str = ret_str[:-9]
+    return ret_str
 
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):

@@ -116,6 +116,7 @@ class VacuumPlot(pg.PlotWidget):
         super().__init__(*args, **kwargs)
 
         self.setLogMode(y=True)
+        self.getAxis('left').enableAutoSIPrefix(enable=False)
         self.showGrid(x=True, y=True, alpha=0.4)
 
         # http://www.pyqtgraph.org/documentation/graphicsItems/viewbox.html#pyqtgraph.ViewBox.setLimits

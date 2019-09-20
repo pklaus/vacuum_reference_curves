@@ -163,9 +163,9 @@ class VacuumPlot(pg.PlotWidget):
                 self._mouse_over_plot = True
                 if self._crosshair_enabled:
                     self.showCrosshair()
-                cursor = QtGui.QCursor(QtCore.Qt.BlankCursor)
-                QtGui.QApplication.setOverrideCursor(cursor)
-                QtGui.QApplication.changeOverrideCursor(cursor)
+                    cursor = QtGui.QCursor(QtCore.Qt.BlankCursor)
+                    QtGui.QApplication.setOverrideCursor(cursor)
+                    QtGui.QApplication.changeOverrideCursor(cursor)
                 #QtGui.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
             if self._crosshair_enabled:
                 self._crosshair.pos = mousePoint
@@ -178,9 +178,10 @@ class VacuumPlot(pg.PlotWidget):
             # this method should be called only once when the mouse leaves the target region (ViewBox)
             return
         self._mouse_over_plot = False
-        QtGui.QApplication.restoreOverrideCursor()
         self.plotItem.setTitle(self.default_title)
-        if self._crosshair_enabled: self.hideCrosshair()
+        if self._crosshair_enabled:
+            self.hideCrosshair()
+            QtGui.QApplication.restoreOverrideCursor()
 
     def leaveEvent(self, event):
         self.mouseLeftTargetArea()

@@ -109,6 +109,9 @@ class VacuumPlot(pg.PlotWidget):
         self.setMouseTracking(True)
         self.scene().sigMouseMoved.connect(self.mouseMoved)
 
+        # fix to repaint formerly protruding axis tick labels
+        self.sigRangeChanged.connect(self.forceRepaint)
+
     def enableCrosshair(self):
         self._crosshair = True
         pen = pg.mkPen('000', width=0.5)
@@ -148,6 +151,9 @@ class VacuumPlot(pg.PlotWidget):
         self.plotItem.setTitle(self.default_title)
         self.hideCrosshair()
         return super().leaveEvent(event)
+
+    def forceRepaint(self, *args, **kwargs):
+        self.viewport().update()
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):
         #if id in self.current_plots: plot = self.current_plots[id]

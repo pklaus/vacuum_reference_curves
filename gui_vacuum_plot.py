@@ -102,6 +102,8 @@ class VacuumPlot(pg.PlotWidget):
 
     def __init__(self, *args, crosshair=False, **kwargs):
 
+
+        pg.setConfigOptions(antialias=True)
         kwargs['axisItems'] = {'bottom': TimeAxisItem(orientation='bottom')}
 
         self.default_title = kwargs.get('title', '')

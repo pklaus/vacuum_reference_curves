@@ -12,7 +12,7 @@ def get_refcurve_metadata(reffile):
         pass #print(f.read())
     return {'filename': reffile, 'date': 'date', 'name': 'name', 'comment': 'comment'}
 
-def get_refcurves_metadata(root_directory='./data'):
+def get_refcurves_metadata(root_directory='./data_v1.1.0'):
     data = []
     for path in os.scandir(root_directory):
         data.append(recurse_folder(path, top_root=root_directory))

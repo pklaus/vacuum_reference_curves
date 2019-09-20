@@ -142,10 +142,10 @@ class VacuumPlot(pg.PlotWidget):
             #y = np.log10(mousePoint.y())
             y = 10**mousePoint.y()
             self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
-        if self._crosshair:
-            if self._crosshair_hidden: self.showCrosshair()
-            self.vLine.setPos(mousePoint.x())
-            self.hLine.setPos(mousePoint.y())
+            if self._crosshair:
+                if self._crosshair_hidden: self.showCrosshair()
+                self.vLine.setPos(mousePoint.x())
+                self.hLine.setPos(mousePoint.y())
 
     def leaveEvent(self, event):
         self.plotItem.setTitle(self.default_title)

@@ -80,6 +80,8 @@ class VacuumPlot(pg.PlotWidget):
 
         kwargs['axisItems'] = {'bottom': TimeAxisItem(orientation='bottom')}
 
+        self.default_title = kwargs.get('title', '')
+
         super().__init__(*args, **kwargs)
 
         self.setLogMode(y=True)
@@ -126,6 +128,10 @@ class VacuumPlot(pg.PlotWidget):
         if self._crosshair:
             self.vLine.setPos(mousePoint.x())
             self.hLine.setPos(mousePoint.y())
+
+    def leaveEvent(self, event):
+        self.plotItem.setTitle(self.default_title)
+        return super().leaveEvent(event)
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):
         #if id in self.current_plots: plot = self.current_plots[id]

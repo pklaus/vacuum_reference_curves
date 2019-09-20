@@ -49,13 +49,11 @@ def main():
             last_sampling_time = time.time()
             pressures = readings['pressures']
             print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure values: {pressures} [mbar]")
+            change_over_threshold = False
             if last_sample:
-                change_over_threshold = False
                 for i in range(len(pressures)):
                     if abs((pressures[i] - last_sample['pressures'][i]) / last_sample['pressures'][i]) * 100 > args.logging_threshold:
                         change_over_threshold = True
-            else:
-                change_over_threshold = False
             last_logging_far_ago = time.time() - last_logging_time > args.max_logging_interval
             sample = readings
             sample.update({'ts': time.time()})

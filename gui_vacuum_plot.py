@@ -32,28 +32,40 @@ class TimeAxisItem(pg.AxisItem):
         http://www.pyqtgraph.org/documentation/_modules/pyqtgraph/graphicsItems/AxisItem.html#AxisItem.tickSpacing
         """
         seconds_difference = maxVal - minVal
-        if seconds_difference < 10:
-            return [ (1, 0), (1, 0) ]
+        if   seconds_difference < 5:
+            return [ (1, 0), (0.2, 0) ]
+        elif seconds_difference < 10:
+            return [ (5, 0), (1, 0) ]
         elif seconds_difference < 60:
             return [ (30, 0), (5, 0) ]
-        elif seconds_difference < 500:
+        elif seconds_difference < 400:
             return [ (60, 0), (10, 0) ]
+        elif seconds_difference < 1000:
+            return [ (5*60, 0), (60, 0) ]
         elif seconds_difference < 3500:
-            return [ (15*60, 0), (60, 0) ]
-        elif seconds_difference < 11*3600:
+            return [ (15*60, 0), (5*60, 0) ]
+        elif seconds_difference < 18*3600:
             return [ (3600, 0), (15*60, 0) ]
-        elif seconds_difference < 23*3600:
-            return [ (12*3600, 0), (3600, 0) ]
-        elif seconds_difference < 6*24*3600:
+        elif seconds_difference < 40*3600:
+            return [ (12*3600, 0), (3*3600, 0) ]
+        elif seconds_difference < 12*24*3600:
             return [ (24*3600, 0), (6*3600, 0) ]
-        elif seconds_difference < 13*24*3600:
+        elif seconds_difference < 22*24*3600:
             return [ (7*24*3600, 0), (24*3600, 0) ]
+        elif seconds_difference < 50*24*3600:
+            return [ (14*24*3600, 0), (7*24*3600, 0) ]
         elif seconds_difference < 170*24*3600:
             return [ (28*24*3600, 0), (7*24*3600, 0) ]
-        elif seconds_difference < 360*24*3600:
-            return [ (180*24*3600, 0), (7*24*3600, 0) ]
+        elif seconds_difference < 250*24*3600:
+            return [ (28*24*3600, 0), (14*24*3600, 0) ]
+        elif seconds_difference < 500*24*3600:
+            return [ (56*24*3600, 0), (28*24*3600, 0) ]
+        elif seconds_difference < 2*360*24*3600:
+            return [ (112*24*3600, 0), (56*24*3600, 0) ]
+        elif seconds_difference < 20*360*24*3600:
+            return [ (365*24*3600, 0), (365/12*24*3600, 0) ]
         else:
-            return [ (365*24*3600, 0), (28*24*3600, 0) ]
+            return [ (3650*24*3600, 0), (365*24*3600, 0) ]
 
 class VacuumPlot(pg.PlotWidget):
     """

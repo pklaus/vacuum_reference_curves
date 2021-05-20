@@ -46,7 +46,7 @@ class ReferenceCurveGUI(QWidget):
         topright = QFrame(self)
         topright.setFrameShape(QFrame.StyledPanel)
 
-        self.vp = VacuumPlot(title='Vacuum Plot', name='Vacuum')
+        self.vp = VacuumPlot(title='Vacuum Plot', name='Vacuum', useOpenGL=False)
         self.vp.enableCrosshair()
 
         bottom = self.vp
@@ -105,5 +105,7 @@ if __name__ == '__main__':
     timer = QtCore.QTimer()
     timer.timeout.connect(lambda: None)
     timer.start(1)
+    
+    #app.quit()
 
     sys.exit(app.exec_())

@@ -39,7 +39,7 @@ def main():
         if args.gauge_plugin == 'balzers':
             gauge = balzers_pkg020_plugin.BalzersPkg020(identifier='',channels=[ch[0] for ch in args.channel])
         elif args.gauge_plugin == 'vacom':
-            gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB0', channels=[ch[0] for ch in args.channel])
+            gauge = vacom_mvc3_plugin.VacomMvc3(identifier='/dev/ttyUSB1', channels=[ch[0] for ch in args.channel])
         while True:
             try:
                 readings = gauge.get_readings()
@@ -49,13 +49,11 @@ def main():
             last_sampling_time = time.time()
             pressures = readings['pressures']
             print(f"{dt.now().isoformat(' ')} {time.time() - start:.1f} pressure values: {pressures} [mbar]")
+            change_over_threshold = False
             if last_sample:
-                change_over_threshold = False
                 for i in range(len(pressures)):
                     if abs((pressures[i] - last_sample['pressures'][i]) / last_sample['pressures'][i]) * 100 > args.logging_threshold:
                         change_over_threshold = True
-            else:
-                change_over_threshold = False
             last_logging_far_ago = time.time() - last_logging_time > args.max_logging_interval
             sample = readings
             sample.update({'ts': time.time()})

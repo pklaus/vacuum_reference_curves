@@ -1,15 +1,22 @@
 import PyQt5
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtWidgets, QtGui, QtCore
 import pyqtgraph as pg
 import pyqtgraph.exporters
 import numpy as np
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 def format_timedelta(seconds):
-    return str(dt.utcfromtimestamp(seconds) - dt.utcfromtimestamp(0))
+    td = dt.utcfromtimestamp(seconds) - dt.utcfromtimestamp(0)
+    if td >= timedelta(0):
+        ret_str = str(td)
+    else:
+        ret_str = '-' + str(-td)
+    if ret_str.endswith(('day, 0:00:00', 'days, 0:00:00')):
+        ret_str = ret_str[:-9]
+    return ret_str
 
 class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
@@ -25,28 +32,40 @@ class TimeAxisItem(pg.AxisItem):
         http://www.pyqtgraph.org/documentation/_modules/pyqtgraph/graphicsItems/AxisItem.html#AxisItem.tickSpacing
         """
         seconds_difference = maxVal - minVal
-        if seconds_difference < 10:
-            return [ (1, 0), (1, 0) ]
+        if   seconds_difference < 5:
+            return [ (1, 0), (0.2, 0) ]
+        elif seconds_difference < 10:
+            return [ (5, 0), (1, 0) ]
         elif seconds_difference < 60:
             return [ (30, 0), (5, 0) ]
-        elif seconds_difference < 500:
+        elif seconds_difference < 400:
             return [ (60, 0), (10, 0) ]
+        elif seconds_difference < 1000:
+            return [ (5*60, 0), (60, 0) ]
         elif seconds_difference < 3500:
-            return [ (15*60, 0), (60, 0) ]
-        elif seconds_difference < 11*3600:
+            return [ (15*60, 0), (5*60, 0) ]
+        elif seconds_difference < 18*3600:
             return [ (3600, 0), (15*60, 0) ]
-        elif seconds_difference < 23*3600:
-            return [ (12*3600, 0), (3600, 0) ]
-        elif seconds_difference < 6*24*3600:
+        elif seconds_difference < 40*3600:
+            return [ (12*3600, 0), (3*3600, 0) ]
+        elif seconds_difference < 12*24*3600:
             return [ (24*3600, 0), (6*3600, 0) ]
-        elif seconds_difference < 13*24*3600:
+        elif seconds_difference < 22*24*3600:
             return [ (7*24*3600, 0), (24*3600, 0) ]
+        elif seconds_difference < 50*24*3600:
+            return [ (14*24*3600, 0), (7*24*3600, 0) ]
         elif seconds_difference < 170*24*3600:
             return [ (28*24*3600, 0), (7*24*3600, 0) ]
-        elif seconds_difference < 360*24*3600:
-            return [ (180*24*3600, 0), (7*24*3600, 0) ]
+        elif seconds_difference < 250*24*3600:
+            return [ (28*24*3600, 0), (14*24*3600, 0) ]
+        elif seconds_difference < 500*24*3600:
+            return [ (56*24*3600, 0), (28*24*3600, 0) ]
+        elif seconds_difference < 2*360*24*3600:
+            return [ (112*24*3600, 0), (56*24*3600, 0) ]
+        elif seconds_difference < 20*360*24*3600:
+            return [ (365*24*3600, 0), (365/12*24*3600, 0) ]
         else:
-            return [ (365*24*3600, 0), (28*24*3600, 0) ]
+            return [ (3650*24*3600, 0), (365*24*3600, 0) ]
 
 class VacuumPlot(pg.PlotWidget):
     """
@@ -56,12 +75,15 @@ class VacuumPlot(pg.PlotWidget):
 
     current_plots = {}
     _crosshair = False
+    _crosshair_hidden = True
 
     def __init__(self, *args, crosshair=False, **kwargs):
 
         kwargs['axisItems'] = {'bottom': TimeAxisItem(orientation='bottom')}
 
         super().__init__(*args, **kwargs)
+
+        self.default_title = kwargs.get('title', '')
 
         self.setLogMode(y=True)
         self.showGrid(x=True, y=True, alpha=0.4)
@@ -87,14 +109,32 @@ class VacuumPlot(pg.PlotWidget):
         self.setMouseTracking(True)
         self.scene().sigMouseMoved.connect(self.mouseMoved)
 
+        # fix to repaint formerly protruding axis tick labels
+        self.sigRangeChanged.connect(self.forceRepaint)
+
     def enableCrosshair(self):
-         self._crosshair = True
-         vLine = pg.InfiniteLine(angle=90, movable=False)
-         hLine = pg.InfiniteLine(angle=0, movable=False)
-         self.addItem(vLine, ignoreBounds=True)
-         self.addItem(hLine, ignoreBounds=True)
-         self.vLine = vLine
-         self.hLine = hLine
+        self._crosshair = True
+        pen = pg.mkPen('000', width=0.5)
+        self.vLine = pg.InfiniteLine(angle=90, movable=False, pen=pen)
+        self.hLine = pg.InfiniteLine(angle=0, movable=False, pen=pen)
+        self.addItem(self.vLine, ignoreBounds=True)
+        self.addItem(self.hLine, ignoreBounds=True)
+        self.showCrosshair()
+
+    def showCrosshair(self):
+        if self._crosshair:
+            self._crosshair_hidden = False
+            self.vLine.show()
+            self.hLine.show()
+
+    def hideCrosshair(self):
+        if self._crosshair:
+            self._crosshair_hidden = True
+            self.vLine.hide()
+            self.hLine.hide()
+
+    def forceRepaint(self, *args, **kwargs):
+        self.viewport().update()
 
     def mouseMoved(self, evt):
         pos = evt
@@ -106,8 +146,15 @@ class VacuumPlot(pg.PlotWidget):
             y = 10**mousePoint.y()
             self.plotItem.setTitle(f"<span style='font-size: 15pt'>pressure: {y:.2e} mbar, time: {x}, </span>")
         if self._crosshair:
+            if self._crosshair_hidden: self.showCrosshair()
             self.vLine.setPos(mousePoint.x())
             self.hLine.setPos(mousePoint.y())
+
+    def leaveEvent(self, event):
+        self.plotItem.setTitle(self.default_title)
+        self.hideCrosshair()
+        self.forceRepaint()
+        return super().leaveEvent(event)
 
     def show_data(self, id, rc=None, c=(200, 200, 100)):
         #if id in self.current_plots: plot = self.current_plots[id]
@@ -146,6 +193,7 @@ class VacuumPlot(pg.PlotWidget):
             del self.current_plots[id]
 
     def save_as(self, filename, width=200):
+        """ http://www.pyqtgraph.org/documentation/exporting.html """
         exporter = pg.exporters.ImageExporter(self.plotItem)
         exporter.parameters()['width'] = width # this also affects the height parameter
         exporter.export(filename)
